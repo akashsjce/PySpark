@@ -1,0 +1,64 @@
+'''
+Task from this Document is to 
+1) creating Df from list of tuple
+2)create a list from df with state as value
+3)using select create state list
+4) convert into pandas and make a list
+
+'''
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType,StructField,StringType,IntegerType
+from pyspark.sql.functions import lit,col
+
+
+my_data = [("James","Smith","USA","CA"),("Michael","Rose","USA","NY"), \
+    ("Robert","Williams","USA","CA"),("Maria","Jones","USA","FL") \
+  ]
+
+my_schema=StructType([
+    StructField("Fname",StringType(),True),
+    StructField("Lname",StringType(),True),
+    StructField("Country",StringType(),True),
+    StructField("State",StringType(),True)
+])
+# 1)
+spark=SparkSession.builder.appName("1_Example").master("local[*]").getOrCreate()
+df=spark.createDataFrame(data=my_data,schema=my_schema)
+df.show()
+df.printSchema()
+
+
+# 2)
+list1=df.rdd.map(lambda x:x[3]).collect()
+print(list1)
+
+# 3)
+list2=df.select(df.State).rdd.flatMap(lambda x:x).collect()
+print(list2)
+
+# 4)
+list3=df.select(df.State).toPandas()['State']
+print(list(list3))
+
+
+--------------------------------------------------OUTPUT------------------------------------------------------------
+
++-------+--------+-------+-----+
+|  Fname|   Lname|Country|State|
++-------+--------+-------+-----+
+|  James|   Smith|    USA|   CA|
+|Michael|    Rose|    USA|   NY|
+| Robert|Williams|    USA|   CA|
+|  Maria|   Jones|    USA|   FL|
++-------+--------+-------+-----+
+
+root
+ |-- Fname: string (nullable = true)
+ |-- Lname: string (nullable = true)
+ |-- Country: string (nullable = true)
+ |-- State: string (nullable = true)
+
+['CA', 'NY', 'CA', 'FL']
+['CA', 'NY', 'CA', 'FL']
+['CA', 'NY', 'CA', 'FL']
