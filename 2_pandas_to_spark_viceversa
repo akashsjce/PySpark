@@ -1,0 +1,27 @@
+'''
+converstion from pandas to spark df ans vice versa 
+Task :
+1) from data create pandas df and from this create spark df
+2) from spark df create pandas df
+
+'''
+
+import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType,StructField,StringType,IntegerType
+data = [['Scott', 50], ['Jeff', 45], ['Thomas', 54],['Ann',34]]
+
+
+# 1)
+pdf=pd.DataFrame(data,columns=['Name','Age'])
+# print(pdf)
+Schema=StructType([
+    StructField("Name",StringType(),True),
+    StructField("Age",IntegerType(),True)
+])
+spark=SparkSession.builder.appName("pandas_df_spark").master("local[*]").getOrCreate()
+df=spark.createDataFrame(pdf,schema=Schema)
+df.show()
+
+dfp=df.select('*').toPandas()
+print(dfp)
